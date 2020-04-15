@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public class THealthReportFemale extends BaseEntity {
     private Integer id;
 
+    //添加注释
     private String item;
 
     private BigDecimal score;
