@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.enjoylearning.mybatis.mapper.TUserRoleMapper" >
+  <resultMap id="BaseResultMap" type="com.enjoylearning.mybatis.entity.TUserRole" >
+    <id column="role_id" property="roleId" jdbcType="INTEGER" />
+    <id column="user_id" property="userId" jdbcType="INTEGER" />
+  </resultMap>
+
+  <!-- 角色信息 -->
+  <resultMap id="roleResultMap" type="TUserRole" extends="BaseResultMap">
+      <collection  property="roles" column="userId" select="com.enjoylearning.mybatis.mapper.TRoleMapper.selectByPrimaryKey"></collection>
+  </resultMap>
+
+
+  <delete id="deleteByPrimaryKey" parameterType="map" >
+    delete from t_user_role
+    where role_id = #{roleId,jdbcType=INTEGER}
+      and user_id = #{userId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.enjoylearning.mybatis.entity.TUserRole" >
+    insert into t_user_role (role_id, user_id)
+    values (#{roleId,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER})
+  </insert>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select role_id, user_id
+    from t_user_role
+  </select>
+
+  <select id="selectByUserId" resultMap="roleResultMap" parameterType="INTEGER">
+    select role_id, user_id
+    from t_user_role
+    <where>
+        <if test="userId != null and userId !=''">
+             and user_id = #{userId}
+
+        </if>
+    </where>
+
+  </select>
+
+
+
+
+
+
+
+
+
+</mapper>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.enjoylearning.mybatis.mapper.TUserMapper" >
+  <resultMap id="BaseResultMap" type="com.enjoylearning.mybatis.entity.TUser" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    <result column="real_name" property="realName" jdbcType="VARCHAR" />
+    <result column="sex" property="sex" jdbcType="TINYINT" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="note" property="note" jdbcType="VARCHAR" />
+    <!--<result column="position_id" property="positionId" jdbcType="INTEGER" />-->
+  </resultMap>
+
+
+
+
+  <!-- 角色信息 -->
+  <resultMap id="roleResultMap" type="TUser" extends="BaseResultMap">
+    <collection  property="roles" fetchType="lazy" column="id" select="com.enjoylearning.mybatis.mapper.TUserRoleMapper.selectByUserId"></collection>
+  </resultMap>
+
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_user
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.enjoylearning.mybatis.entity.TUser" >
+    <selectKey resultType="java.lang.Integer" keyProperty="id" order="BEFORE" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into t_user (id, user_name, real_name, 
+      sex, mobile, email, 
+      note, position_id)
+    values (#{id,jdbcType=INTEGER}, #{userName,jdbcType=VARCHAR}, #{realName,jdbcType=VARCHAR}, 
+      #{sex,jdbcType=TINYINT}, #{mobile,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, 
+      #{note,jdbcType=VARCHAR}, #{positionId,jdbcType=INTEGER})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.enjoylearning.mybatis.entity.TUser" >
+    update t_user
+    set user_name = #{userName,jdbcType=VARCHAR},
+      real_name = #{realName,jdbcType=VARCHAR},
+      sex = #{sex,jdbcType=TINYINT},
+      mobile = #{mobile,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      note = #{note,jdbcType=VARCHAR},
+      position_id = #{positionId,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select id, user_name, real_name, sex, mobile, email, note, position_id
+    from t_user
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+
+
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, user_name, real_name, sex, mobile, email, note, position_id
+    from t_user
+  </select>
+
+
+  <select id="selectPosition" resultMap="postionResult" >
+    select id, user_name, real_name, sex, mobile, email, note, position_id
+    from t_user
+  </select>
+
+  <resultMap id="postionResult" type="TUser" extends="BaseResultMap">
+    <association property="tPosition" column="position_id" fetchType="lazy" javaType="TPosition" select="com.enjoylearning.mybatis.mapper.TPositionMapper.selectByPrimaryKey"/>
+
+  </resultMap>
+
+
+  <select id="selectUserPosition" resultMap="userAndPositionResultMap">
+		select
+		    a.id,
+		    user_name,
+			real_name,
+			sex,
+			mobile,
+			email,
+			a.note,
+			b.id  post_id,
+			b.post_name,
+			b.note post_note
+		from t_user a,
+			t_position b
+		where a.position_id = b.id
+
+	</select>
+
+
+  <resultMap id="userAndPositionResultMap"  type="TUser" extends="BaseResultMap">
+    <association property="tPosition"   javaType="TPosition" columnPrefix="post_" >
+      <id property="id" column="id"/>
+      <result property="postName" column="name"/>
+      <result property="note" column="note"/>
+    </association>
+  </resultMap>
+
+
+
+
+</mapper>
