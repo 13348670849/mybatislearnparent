@@ -149,6 +149,7 @@ public class Configuration {
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
 
+  /* 配置文件中的所有的属性类 */
   protected Properties variables = new Properties();
   
   protected ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
@@ -620,12 +621,16 @@ public class Configuration {
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
     Executor executor;
     if (ExecutorType.BATCH == executorType) {
+      //批量
       executor = new BatchExecutor(this, transaction);
     } else if (ExecutorType.REUSE == executorType) {
+      //？
       executor = new ReuseExecutor(this, transaction);
     } else {
+      // 默认的simple
       executor = new SimpleExecutor(this, transaction);
     }
+    //开启本地缓存
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
@@ -784,6 +789,7 @@ public class Configuration {
     mapperRegistry.addMappers(packageName, superType);
   }
 
+  // 扫描包下面所有的接口
   public void addMappers(String packageName) {
     mapperRegistry.addMappers(packageName);
   }

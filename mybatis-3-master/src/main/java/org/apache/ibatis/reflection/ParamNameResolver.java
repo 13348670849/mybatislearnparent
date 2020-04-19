@@ -50,7 +50,9 @@ public class ParamNameResolver {
   private boolean hasParamAnnotation;
 
   public ParamNameResolver(Configuration config, Method method) {
+    // 参数类型
     final Class<?>[] paramTypes = method.getParameterTypes();
+    // 注解
     final Annotation[][] paramAnnotations = method.getParameterAnnotations();
     final SortedMap<Integer, String> map = new TreeMap<>();
     int paramCount = paramAnnotations.length;
@@ -61,6 +63,7 @@ public class ParamNameResolver {
         continue;
       }
       String name = null;
+      //采用注解形式参数
       for (Annotation annotation : paramAnnotations[paramIndex]) {
         if (annotation instanceof Param) {
           hasParamAnnotation = true;

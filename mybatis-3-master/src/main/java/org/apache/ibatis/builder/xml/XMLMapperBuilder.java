@@ -53,6 +53,7 @@ import org.apache.ibatis.type.TypeHandler;
 public class XMLMapperBuilder extends BaseBuilder {
 
   private final XPathParser parser;
+  //  Mapper的助理创建类
   private final MapperBuilderAssistant builderAssistant;
   private final Map<String, XNode> sqlFragments;
   private final String resource;
@@ -87,10 +88,17 @@ public class XMLMapperBuilder extends BaseBuilder {
     this.resource = resource;
   }
 
+  /**
+   * 配置的xml文件的路径
+   */
   public void parse() {
+    //判断xml资源我呢见是否被加载过
     if (!configuration.isResourceLoaded(resource)) {
+      //解析 mapper.xml文件
       configurationElement(parser.evalNode("/mapper"));
+      //防止重复创建
       configuration.addLoadedResource(resource);
+      //注册接口的代理工厂类
       bindMapperForNamespace();
     }
 
@@ -110,11 +118,19 @@ public class XMLMapperBuilder extends BaseBuilder {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
       builderAssistant.setCurrentNamespace(namespace);
+      // 设置二级缓存
+      // 缓存依赖
       cacheRefElement(context.evalNode("cache-ref"));
+      // 缓存
       cacheElement(context.evalNode("cache"));
+      // 参数map，将不再使用
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
+      // 结果集map
       resultMapElements(context.evalNodes("/mapper/resultMap"));
+      //sqlFragments
       sqlElement(context.evalNodes("/mapper/sql"));
+      // 填充 select，insert，update，delete
+      // mappedStatement
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
@@ -196,6 +212,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  // 设置缓存的属性值
   private void cacheElement(XNode context) throws Exception {
     if (context != null) {
       String type = context.getStringAttribute("type", "PERPETUAL");
@@ -207,6 +224,7 @@ public class XMLMapperBuilder extends BaseBuilder {
       boolean readWrite = !context.getBooleanAttribute("readOnly", false);
       boolean blocking = context.getBooleanAttribute("blocking", false);
       Properties props = context.getChildrenAsProperties();
+      // 使用助理类创建缓存
       builderAssistant.useNewCache(typeClass, evictionClass, flushInterval, size, readWrite, blocking, props);
     }
   }
@@ -260,14 +278,18 @@ public class XMLMapperBuilder extends BaseBuilder {
         resultMapNode.getStringAttribute("ofType",
             resultMapNode.getStringAttribute("resultType",
                 resultMapNode.getStringAttribute("javaType"))));
+    //继承关系
     String extend = resultMapNode.getStringAttribute("extends");
+    // 是否自动映射
     Boolean autoMapping = resultMapNode.getBooleanAttribute("autoMapping");
+    // 解析对应的类型，可从别名中找
     Class<?> typeClass = resolveClass(type);
     Discriminator discriminator = null;
     List<ResultMapping> resultMappings = new ArrayList<>();
     resultMappings.addAll(additionalResultMappings);
     List<XNode> resultChildren = resultMapNode.getChildren();
     for (XNode resultChild : resultChildren) {
+      //   实体bean的构造函数
       if ("constructor".equals(resultChild.getName())) {
         processConstructorElement(resultChild, typeClass, resultMappings);
       } else if ("discriminator".equals(resultChild.getName())) {
@@ -294,6 +316,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     for (XNode argChild : argChildren) {
       List<ResultFlag> flags = new ArrayList<>();
       flags.add(ResultFlag.CONSTRUCTOR);
+      // 是id类型
       if ("idArg".equals(argChild.getName())) {
         flags.add(ResultFlag.ID);
       }
@@ -368,6 +391,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     String javaType = context.getStringAttribute("javaType");
     String jdbcType = context.getStringAttribute("jdbcType");
     String nestedSelect = context.getStringAttribute("select");
+    //关联关系
     String nestedResultMap = context.getStringAttribute("resultMap",
         processNestedResultMappings(context, Collections.<ResultMapping> emptyList()));
     String notNullColumn = context.getStringAttribute("notNullColumn");

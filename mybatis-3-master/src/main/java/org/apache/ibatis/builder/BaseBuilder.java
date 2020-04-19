@@ -110,6 +110,12 @@ public abstract class BaseBuilder {
     }
   }
 
+  /**
+   * 从别名中找class类型，没有的话创建
+   * @param alias
+   * @param <T>
+   * @return
+   */
   protected <T> Class<? extends T> resolveClass(String alias) {
     if (alias == null) {
       return null;

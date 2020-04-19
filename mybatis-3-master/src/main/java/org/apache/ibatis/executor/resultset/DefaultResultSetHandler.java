@@ -349,8 +349,10 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   private void handleRowValuesForSimpleResultMap(ResultSetWrapper rsw, ResultMap resultMap, ResultHandler<?> resultHandler, RowBounds rowBounds, ResultMapping parentMapping)
       throws SQLException {
     DefaultResultContext<Object> resultContext = new DefaultResultContext<>();
+    //处理分页信息
     skipRows(rsw.getResultSet(), rowBounds);
     while (shouldProcessMoreRows(resultContext, rowBounds) && rsw.getResultSet().next()) {
+      //处理鉴别器信息
       ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(rsw.getResultSet(), resultMap, null);
       Object rowValue = getRowValue(rsw, discriminatedResultMap);
       storeObject(resultHandler, resultContext, rowValue, parentMapping, rsw.getResultSet());
@@ -393,10 +395,16 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap) throws SQLException {
     final ResultLoaderMap lazyLoader = new ResultLoaderMap();
+    //创建对象
     Object rowValue = createResultObject(rsw, resultMap, lazyLoader, null);
     if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
+      //获取元数据信息  Object originalObject;ObjectWrapper objectWrapper;
+      //  ObjectFactory objectFactory;
+      //  ObjectWrapperFactory objectWrapperFactory;
+      //   ReflectorFactory reflectorFactory;
       final MetaObject metaObject = configuration.newMetaObject(rowValue);
       boolean foundValues = this.useConstructorMappings;
+      //判断是否自动映射
       if (shouldApplyAutomaticMappings(resultMap, false)) {
         foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, null) || foundValues;
       }

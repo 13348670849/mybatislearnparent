@@ -113,7 +113,9 @@ public class XMLConfigBuilder extends BaseBuilder {
       // ？
       loadCustomVfs(settings);
 
+      //别名设置
       typeAliasesElement(root.evalNode("typeAliases"));
+      // 插件类设置
       pluginElement(root.evalNode("plugins"));
       objectFactoryElement(root.evalNode("objectFactory"));
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
@@ -121,12 +123,16 @@ public class XMLConfigBuilder extends BaseBuilder {
 
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      //系统环境设置，主要为jdbc参数设置
       environmentsElement(root.evalNode("environments"));
 
+      // 数据库的标志
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
 
+      // jdbcType和JavaType的转换，已经默认注册了常用搞得类型转换
       typeHandlerElement(root.evalNode("typeHandlers"));
 
+      // mappers文件的注册
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -279,6 +285,11 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setConfigurationFactory(resolveClass(props.getProperty("configurationFactory")));
   }
 
+  /**
+   * 每一个SqlSessionFactory只能配置一个数据源
+   * @param context
+   * @throws Exception
+   */
   private void environmentsElement(XNode context) throws Exception {
     if (context != null) {
       if (environment == null) {
@@ -287,9 +298,15 @@ public class XMLConfigBuilder extends BaseBuilder {
       for (XNode child : context.getChildren()) {
         String id = child.getStringAttribute("id");
         if (isSpecifiedEnvironment(id)) {
-            TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
+          //加载的事务类型 typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
+          //    typeAliasRegistry.registerAlias("MANAGED", ManagedTransactionFactory.class);
+          //    策略模式的应用，不同的算法取不同的值
+          TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
+          // 加载数据源
           DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
           DataSource dataSource = dsFactory.getDataSource();
+          // 建造着模式加载环境变量
+          // 使用内部类的建造着模式
           Environment.Builder environmentBuilder = new Environment.Builder(id)
               .transactionFactory(txFactory)
               .dataSource(dataSource);
@@ -370,6 +387,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
+        //  使用的包名
         if ("package".equals(child.getName())) {
           String mapperPackage = child.getStringAttribute("name");
           configuration.addMappers(mapperPackage);
@@ -377,6 +395,7 @@ public class XMLConfigBuilder extends BaseBuilder {
           String resource = child.getStringAttribute("resource");
           String url = child.getStringAttribute("url");
           String mapperClass = child.getStringAttribute("class");
+          // resouce
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
             InputStream inputStream = Resources.getResourceAsStream(resource);
@@ -387,6 +406,7 @@ public class XMLConfigBuilder extends BaseBuilder {
             InputStream inputStream = Resources.getUrlAsStream(url);
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
             mapperParser.parse();
+            // class类型
           } else if (resource == null && url == null && mapperClass != null) {
             Class<?> mapperInterface = Resources.classForName(mapperClass);
             configuration.addMapper(mapperInterface);
