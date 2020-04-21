@@ -176,6 +176,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   //
   // HANDLE RESULT SETS
+  //    处理结果集
   //
   @Override
   public List<Object> handleResultSets(Statement stmt) throws SQLException {
@@ -184,7 +185,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     final List<Object> multipleResults = new ArrayList<>();
 
     int resultSetCount = 0;
-    // 一个Statement可能返回多个结果集，如存储过程
+    // 获取结果集的包装类，包装了结果集的元数据信息，获取第一个结果集
     ResultSetWrapper rsw = getFirstResultSet(stmt);
     // 获取结果集对应的ResultMap
     List<ResultMap> resultMaps = mappedStatement.getResultMaps();
@@ -194,6 +195,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       ResultMap resultMap = resultMaps.get(resultSetCount);
       //根据映射规则对结果集进行转换
       handleResultSet(rsw, resultMap, multipleResults, null);
+      //获取下一个结果集
       rsw = getNextResultSet(stmt);
       cleanUpAfterHandlingResultSet();
       resultSetCount++;
@@ -298,9 +300,11 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       if (parentMapping != null) {
         handleRowValues(rsw, resultMap, null, RowBounds.DEFAULT, parentMapping);
       } else {
+        // DefaultSqlSession.selectList方法中, 初始化resultHandler时为null
         if (resultHandler == null) {
           DefaultResultHandler defaultResultHandler = new DefaultResultHandler(objectFactory);
           handleRowValues(rsw, resultMap, defaultResultHandler, rowBounds, null);
+          // multipleResults结果集添加ORM映射后的数据
           multipleResults.add(defaultResultHandler.getResultList());
         } else {
           handleRowValues(rsw, resultMap, resultHandler, rowBounds, null);
@@ -322,6 +326,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   //
 
   public void handleRowValues(ResultSetWrapper rsw, ResultMap resultMap, ResultHandler<?> resultHandler, RowBounds rowBounds, ResultMapping parentMapping) throws SQLException {
+    //嵌套结果集
     if (resultMap.hasNestedResultMaps()) {
       ensureNoRowBounds();
       checkResultHandler();
@@ -354,7 +359,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     while (shouldProcessMoreRows(resultContext, rowBounds) && rsw.getResultSet().next()) {
       //处理鉴别器信息
       ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(rsw.getResultSet(), resultMap, null);
+       // 映射当前数据库数据到JavaBean, 此行结束后, 返回结果即为JavaBean对象
       Object rowValue = getRowValue(rsw, discriminatedResultMap);
+      // 保存结果集到DefaultResultHandler中, 外部通过该对象获取结果集
       storeObject(resultHandler, resultContext, rowValue, parentMapping, rsw.getResultSet());
     }
   }
@@ -395,8 +402,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap) throws SQLException {
     final ResultLoaderMap lazyLoader = new ResultLoaderMap();
-    //创建对象
+    //创建对象，并未赋值
     Object rowValue = createResultObject(rsw, resultMap, lazyLoader, null);
+    //hasTypeHandlerForResultObject : 判断当前结果集在JDBC->java的默认集合中是否存在
     if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
       //获取元数据信息  Object originalObject;ObjectWrapper objectWrapper;
       //  ObjectFactory objectFactory;
@@ -521,6 +529,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   }
 
   private boolean applyAutomaticMappings(ResultSetWrapper rsw, ResultMap resultMap, MetaObject metaObject, String columnPrefix) throws SQLException {
+    //获取还没建立连接的字段
     List<UnMappedColumnAutoMapping> autoMapping = createAutomaticMappings(rsw, resultMap, metaObject, columnPrefix);
     boolean foundValues = false;
     if (!autoMapping.isEmpty()) {

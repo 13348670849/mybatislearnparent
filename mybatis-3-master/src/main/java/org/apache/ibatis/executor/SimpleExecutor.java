@@ -58,6 +58,8 @@ public class SimpleExecutor extends BaseExecutor {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
+      //得到StatementHandler对象，RoutingStatementHandler中使用静态代理的方式去生成真正实现业务逻辑的处理
+      // 默认使用的PreparedStatementHandler
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
       //产生Statement对象
       stmt = prepareStatement(handler, ms.getStatementLog());
@@ -82,8 +84,10 @@ public class SimpleExecutor extends BaseExecutor {
 
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
+    //获取链接。链接可能是被日志代理的
     Connection connection = getConnection(statementLog);
     stmt = handler.prepare(connection, transaction.getTimeout());
+    //处理占位符信息
     handler.parameterize(stmt);
     return stmt;
   }
