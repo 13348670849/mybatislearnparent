@@ -40,7 +40,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 
 /**
- *
+ *  线程不安全，每一个只能使用一个
  * The default implementation for {@link SqlSession}.
  * Note that this class is not Thread-Safe.
  *
@@ -48,10 +48,14 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class DefaultSqlSession implements SqlSession {
 
+  //系统基础配置文件
   private final Configuration configuration;
+  // 执行器
   private final Executor executor;
 
+  //事务
   private final boolean autoCommit;
+  //脏读
   private boolean dirty;
   private List<Cursor<?>> cursorList;
 
@@ -74,7 +78,7 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <T> T selectOne(String statement, Object parameter) {
     // Popular vote was to return null on 0 results and throw exception on too many.
-    //  statement是mappedStatement的惟一标识符
+    //  statement是mappedStatement的惟一标识符 ns+id
     List<T> list = this.<T>selectList(statement, parameter);
     if (list.size() == 1) {
       return list.get(0);
@@ -146,6 +150,7 @@ public class DefaultSqlSession implements SqlSession {
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {
       // 获取sql语句的执行体
+      //MappedStatement封装了一个sql语句执行体的所有信息
       MappedStatement ms = configuration.getMappedStatement(statement);
       //Executor是真正的执行体，有3中实现方式，默认会采用CachingWxecuteor
       return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);

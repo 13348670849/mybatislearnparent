@@ -51,6 +51,7 @@ public final class MappedStatement {
   private KeyGenerator keyGenerator;
   private String[] keyProperties;
   private String[] keyColumns;
+  // 是否有嵌套结果集
   private boolean hasNestedResultMaps;
   private String databaseId;
   private Log statementLog;

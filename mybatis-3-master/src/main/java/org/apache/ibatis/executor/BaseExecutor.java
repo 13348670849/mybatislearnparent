@@ -131,7 +131,9 @@ public abstract class BaseExecutor implements Executor {
 
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+    //封装sql成BoundSql对象
     BoundSql boundSql = ms.getBoundSql(parameter);
+    // 根据一定算法生成key，生成的ke和很多基础因素有关系
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
  }
@@ -143,27 +145,34 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    //是否清空本地缓存
     if (queryStack == 0 && ms.isFlushCacheRequired()) {
       clearLocalCache();
     }
     List<E> list;
     try {
       queryStack++;
+      //先从缓存中取
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
       } else {
+        //从sql语句中查询
         list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
       }
     } finally {
       queryStack--;
     }
     if (queryStack == 0) {
+      //?
       for (DeferredLoad deferredLoad : deferredLoads) {
         deferredLoad.load();
       }
       // issue #601
       deferredLoads.clear();
+      //MyBatis 利用本地缓存机制（Local Cache）防止循环引用和加速重复的嵌套查询。
+      // 默认值为 SESSION，会缓存一个会话中执行的所有查询。
+      // 若设置值为 STATEMENT，本地缓存将仅用于执行语句，对相同 SqlSession 的不同查询将不会进行缓存。
       if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
         // issue #482
         clearLocalCache();
@@ -321,6 +330,9 @@ public abstract class BaseExecutor implements Executor {
 
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
+    // 这里为什么要先占位呢？
+    // 回答：嵌套的延迟加载有可能用的是同一个对象，这里说明已经开始查了，
+    // 但是由于处理嵌套的查询，此查询还没有查完，再次执行嵌套查询，且查询的是相同的东西，那么就不用再查了
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
@@ -328,6 +340,8 @@ public abstract class BaseExecutor implements Executor {
       localCache.removeObject(key);
     }
     localCache.putObject(key, list);
+    // 对于callable的statement来说，出参也需要缓存，而出参也是放在了入参中
+    // 因此这里缓存了入参
     if (ms.getStatementType() == StatementType.CALLABLE) {
       localOutputParameterCache.putObject(key, parameter);
     }

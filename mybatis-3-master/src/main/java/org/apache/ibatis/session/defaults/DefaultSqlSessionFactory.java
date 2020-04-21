@@ -90,11 +90,16 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {
+      // 环境变量，dataSource数据源你内容配置方面的
       final Environment environment = configuration.getEnvironment();
+      // 事务工厂，集成spring，可以直接使用spring的事务机制
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
       //事务
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
-      //执行器
+      //执行器，执行器使用了装饰器模式，默认配置一级缓存，使用CachingExecutor装饰了其他子类
+      // Executor的抽象BaseExecutor是模板模式的经典使用，一个抽象类公开定义了执行它的方法的方式/模板。它的子类可以按需要重
+      //写方法实现，但调用将以抽象类中定义的方式进行。定义一个操作中的算法的骨架，而将一些步骤延迟到子类
+      //中。模板方法使得子类可以不改变一个算法的结构即可重定义该算法的某些特定实现
       final Executor executor = configuration.newExecutor(tx, execType);
       // 创建SqlSession
       return new DefaultSqlSession(configuration, executor, autoCommit);

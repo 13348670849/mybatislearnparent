@@ -51,13 +51,19 @@ public class ResultSetWrapper {
 
   public ResultSetWrapper(ResultSet rs, Configuration configuration) throws SQLException {
     super();
+    // 获取类型映射注册信息
     this.typeHandlerRegistry = configuration.getTypeHandlerRegistry();
+    //  结果集
     this.resultSet = rs;
+    //数据库的元数据列
     final ResultSetMetaData metaData = rs.getMetaData();
     final int columnCount = metaData.getColumnCount();
     for (int i = 1; i <= columnCount; i++) {
+      // 数据库列名, 支持别名
       columnNames.add(configuration.isUseColumnLabel() ? metaData.getColumnLabel(i) : metaData.getColumnName(i));
+      // jdbc类型
       jdbcTypes.add(JdbcType.forCode(metaData.getColumnType(i)));
+      // java对应的类型
       classNames.add(metaData.getColumnClassName(i));
     }
   }
