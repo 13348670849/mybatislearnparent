@@ -602,13 +602,16 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private Object createResultObject(ResultSetWrapper rsw, ResultMap resultMap, ResultLoaderMap lazyLoader, String columnPrefix) throws SQLException {
     this.useConstructorMappings = false; // reset previous mapping result
+    // 构造函数传值的type
     final List<Class<?>> constructorArgTypes = new ArrayList<>();
+    // 构造函数参数
     final List<Object> constructorArgs = new ArrayList<>();
     Object resultObject = createResultObject(rsw, resultMap, constructorArgTypes, constructorArgs, columnPrefix);
     if (resultObject != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
       final List<ResultMapping> propertyMappings = resultMap.getPropertyResultMappings();
       for (ResultMapping propertyMapping : propertyMappings) {
         // issue gcode #109 && issue #149
+        //对懒加载的处理
         if (propertyMapping.getNestedQueryId() != null && propertyMapping.isLazy()) {
           resultObject = configuration.getProxyFactory().createProxy(resultObject, lazyLoader, configuration, objectFactory, constructorArgTypes, constructorArgs);
           break;
