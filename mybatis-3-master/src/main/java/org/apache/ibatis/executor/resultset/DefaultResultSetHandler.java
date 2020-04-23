@@ -402,7 +402,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap) throws SQLException {
     final ResultLoaderMap lazyLoader = new ResultLoaderMap();
-    //创建对象，并未赋值
+    //创建对象，并未赋值，如果又懒加载则及进行懒加载处理
     Object rowValue = createResultObject(rsw, resultMap, lazyLoader, null);
     //hasTypeHandlerForResultObject : 判断当前结果集在JDBC->java的默认集合中是否存在
     if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
@@ -488,6 +488,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     }
   }
 
+  // 没有建立链接的字段
   private List<UnMappedColumnAutoMapping> createAutomaticMappings(ResultSetWrapper rsw, ResultMap resultMap, MetaObject metaObject, String columnPrefix) throws SQLException {
     final String mapKey = resultMap.getId() + ":" + columnPrefix;
     List<UnMappedColumnAutoMapping> autoMapping = autoMappingsCache.get(mapKey);
