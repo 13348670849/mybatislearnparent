@@ -755,9 +755,13 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private Object getNestedQueryMappingValue(ResultSet rs, MetaObject metaResultObject, ResultMapping propertyMapping, ResultLoaderMap lazyLoader, String columnPrefix)
       throws SQLException {
+    //嵌套查询id
     final String nestedQueryId = propertyMapping.getNestedQueryId();
+    // 属性
     final String property = propertyMapping.getProperty();
+    //  嵌套查询的 MappedStatement
     final MappedStatement nestedQuery = configuration.getMappedStatement(nestedQueryId);
+    // 嵌套查询参数类型
     final Class<?> nestedQueryParameterType = nestedQuery.getParameterMap().getType();
     final Object nestedQueryParameterObject = prepareParameterForNestedQuery(rs, propertyMapping, nestedQueryParameterType, columnPrefix);
     Object value = null;
