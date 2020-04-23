@@ -93,9 +93,11 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
  * @author Clinton Begin
+ * 全局只生成一个
  */
 public class Configuration {
 
+  /**  环境变量  */
   protected Environment environment;
 
   /* 是否启用行内嵌套语句**/
@@ -593,6 +595,13 @@ public class Configuration {
     return MetaObject.forObject(object, objectFactory, objectWrapperFactory, reflectorFactory);
   }
 
+  /**
+   * 获取ParameterHandler对象，注册插件
+   * @param mappedStatement
+   * @param parameterObject
+   * @param boundSql
+   * @return
+   */
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
     ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
     parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
