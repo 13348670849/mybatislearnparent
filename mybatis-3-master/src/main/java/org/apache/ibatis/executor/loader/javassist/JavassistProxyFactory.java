@@ -41,6 +41,8 @@ import org.apache.ibatis.session.Configuration;
 
 /**
  * @author Eduardo Macarron
+ * 系统默认采用javassist类型创建懒加载的代理类，此创建的代理对象会继承原始对象，
+ * 实现WriteReplaceInterface接口
  */
 public class JavassistProxyFactory implements org.apache.ibatis.executor.loader.ProxyFactory {
 
@@ -103,7 +105,10 @@ public class JavassistProxyFactory implements org.apache.ibatis.executor.loader.
 
     private final Class<?> type;
     private final ResultLoaderMap lazyLoader;
+    //设置关联对象加载的形态，此处为按需加载字段(加载字段由SQL指 定)，不会加载关联表的所有字段，以提高性能
     private final boolean aggressive;
+    //设置触发延迟加载的方法
+    //"equals", "clone", "hashCode", "toString"
     private final Set<String> lazyLoadTriggerMethods;
     private final ObjectFactory objectFactory;
     private final List<Class<?>> constructorArgTypes;
@@ -155,6 +160,7 @@ public class JavassistProxyFactory implements org.apache.ibatis.executor.loader.
               } else if (PropertyNamer.isGetter(methodName)) {
                 final String property = PropertyNamer.methodToProperty(methodName);
                 if (lazyLoader.hasLoader(property)) {
+                  //触发懒加载方法后在此处去进行调用
                   lazyLoader.load(property);
                 }
               }
