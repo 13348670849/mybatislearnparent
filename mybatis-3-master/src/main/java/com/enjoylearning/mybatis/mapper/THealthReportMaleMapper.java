@@ -13,11 +13,19 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package com.enjoylearning.mybatis.entity;
+package com.enjoylearning.mybatis.mapper;
 
-import java.io.Serializable;
+import com.enjoylearning.mybatis.entity.THealthReportMale;
+import java.util.List;
 
+public interface THealthReportMaleMapper {
+    int deleteByPrimaryKey(Integer id);
 
-//测试
-public class BaseEntity implements Serializable {
+    int insert(THealthReportMale record);
+
+    THealthReportMale selectByPrimaryKey(Integer id);
+
+    List<THealthReportMale> selectAll();
+
+    int updateByPrimaryKey(THealthReportMale record);
 }

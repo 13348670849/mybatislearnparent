@@ -13,11 +13,19 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package com.enjoylearning.mybatis.entity;
+package com.enjoylearning.mybatis.mapper;
 
-import java.io.Serializable;
+import com.enjoylearning.mybatis.entity.TPosition;
+import java.util.List;
 
+public interface TPositionMapper {
+    int deleteByPrimaryKey(Integer id);
 
-//测试
-public class BaseEntity implements Serializable {
+    int insert(TPosition record);
+
+    TPosition selectByPrimaryKey(Integer id);
+
+    List<TPosition> selectAll();
+
+    int updateByPrimaryKey(TPosition record);
 }

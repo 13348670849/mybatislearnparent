@@ -13,11 +13,18 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package com.enjoylearning.mybatis.entity;
+package com.enjoylearning.mybatis.mapper;
 
-import java.io.Serializable;
+import com.enjoylearning.mybatis.entity.TUserRole;
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
+public interface TUserRoleMapper {
+    int deleteByPrimaryKey(@Param("roleId") Integer roleId, @Param("userId") Integer userId);
 
-//测试
-public class BaseEntity implements Serializable {
+    int insert(TUserRole record);
+
+    List<TUserRole> selectAll();
+
+    List<TUserRole> selectByUserId( @Param("userId")Integer userId);
 }

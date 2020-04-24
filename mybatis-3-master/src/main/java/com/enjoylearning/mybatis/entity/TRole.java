@@ -15,9 +15,34 @@
  */
 package com.enjoylearning.mybatis.entity;
 
-import java.io.Serializable;
+public class TRole extends BaseEntity {
+    private Integer id;
 
+    private String roleName;
 
-//测试
-public class BaseEntity implements Serializable {
+    private String note;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
 }

@@ -13,11 +13,24 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package com.enjoylearning.mybatis.entity;
+package com.enjoylearning.mybatis.mapper;
 
-import java.io.Serializable;
+import com.enjoylearning.mybatis.entity.TUser;
+import java.util.List;
 
+public interface TUserMapper {
+    int deleteByPrimaryKey(Integer id);
 
-//测试
-public class BaseEntity implements Serializable {
+    int insert(TUser record);
+
+    TUser selectByPrimaryKey(Integer id);
+
+    List<TUser> selectAll();
+
+    int updateByPrimaryKey(TUser record);
+
+    List<TUser> selectPosition();
+
+    List<TUser> selectUserPosition();
+
 }

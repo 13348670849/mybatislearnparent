@@ -15,9 +15,34 @@
  */
 package com.enjoylearning.mybatis.entity;
 
-import java.io.Serializable;
+public class TPosition extends BaseEntity {
+    private Integer id;
 
+    private String postName;
 
-//测试
-public class BaseEntity implements Serializable {
+    private String note;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getPostName() {
+        return postName;
+    }
+
+    public void setPostName(String postName) {
+        this.postName = postName;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
 }

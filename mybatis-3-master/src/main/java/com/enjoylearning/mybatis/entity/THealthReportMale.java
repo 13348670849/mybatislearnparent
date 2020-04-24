@@ -15,9 +15,34 @@
  */
 package com.enjoylearning.mybatis.entity;
 
-import java.io.Serializable;
+public class THealthReportMale extends BaseEntity {
+    private Integer id;
 
+    private String checkProject;
 
-//测试
-public class BaseEntity implements Serializable {
+    private String detail;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getCheckProject() {
+        return checkProject;
+    }
+
+    public void setCheckProject(String checkProject) {
+        this.checkProject = checkProject;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
+    }
 }

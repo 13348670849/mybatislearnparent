@@ -33,6 +33,7 @@ import org.apache.ibatis.session.Configuration;
  */
 public final class MappedStatement {
 
+  //xml文件
   private String resource;
   private Configuration configuration;
   private String id;
