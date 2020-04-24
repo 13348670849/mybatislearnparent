@@ -50,6 +50,9 @@ import org.apache.ibatis.type.TypeHandler;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ * XMLConfigBuilder以及解析Mapper文件的XMLMapperBuilder都继承于BaseBuilder。
+ *    他们对于XML文件本身技术上的加载和解析都委托给了XPathParser，最终用的是jdk自带的xml解析器而非第三方比如dom4j，
+ *    底层使用了xpath方式进行节点解析。
  */
 public class XMLConfigBuilder extends BaseBuilder {
 
@@ -79,6 +82,11 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   public XMLConfigBuilder(InputStream inputStream, String environment, Properties props) {
+    //new XPathParser(reader, true, props, new XMLMapperEntityResolver())的参数含义分别是Reader，
+    // *    是否进行DTD 校验，属性配置，XML实体节点解析器。
+    // * 　　entityResolver比较好理解，跟Spring的XML标签解析器一样，有默认的解析器，也有自定义的比如tx，dubbo等，主要使用了策略模式，
+    // *    在这里mybatis硬编码为了XMLMapperEntityResolver。
+    // * 　　XMLMapperEntityResolver的定义如下
     this(new XPathParser(inputStream, true, props, new XMLMapperEntityResolver()), environment, props);
   }
 
@@ -110,12 +118,19 @@ public class XMLConfigBuilder extends BaseBuilder {
       propertiesElement(root.evalNode("properties"));
       //解析 setting
       Properties settings = settingsAsProperties(root.evalNode("settings"));
-      // ？
+      // VFS主要用来加载容器内的各种资源，比如jar或者class文件
       loadCustomVfs(settings);
 
       //别名设置
+      //每一个在包 domain.blog 中的 Java Bean，在没有注解的情况下，会使用 Bean的首字母小写的非限定类名来作为它的别名。
+      // 比如 domain.blog.Author 的别名为author；若有注解，则别名为其注解值。所以所有的别名，无论是内置的还是自定义的，
+      // 都一开始被保存在configuration.typeAliasRegistry中了，这样就可以确保任何时候使用别名和FQN的效果是一样的
       typeAliasesElement(root.evalNode("typeAliases"));
-      // 插件类设置
+      // 插件在具体实现的时候，采用的是拦截器模式，要注册为mybatis插件，必须实现org.apache.ibatis.plugin.Interceptor接口，
+      // 每个插件可以有自己的属性。interceptor属性值既可以完整的类名，如果启动时无法解析，会抛出ClassNotFound异常。
+      // 实例化插件后，将设置插件的属性赋值给插件实现类的属性字段。
+      // org.apache.ibatis.plugin.Interceptor接口
+      // ClassNotFound异常。实例化插件后
       pluginElement(root.evalNode("plugins"));
       objectFactoryElement(root.evalNode("objectFactory"));
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
@@ -145,6 +160,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
     Properties props = context.getChildrenAsProperties();
     // Check that all settings are known to the configuration class
+    // 检查所有从settings加载的设置,确保它们都在Configuration定义的范围内
     MetaClass metaConfig = MetaClass.forClass(Configuration.class, localReflectorFactory);
     for (Object key : props.keySet()) {
       if (!metaConfig.hasSetter(String.valueOf(key))) {
@@ -230,6 +246,8 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  //都先和configuration.variables合并，然后赋值到XMLConfigBuilder.parser和BaseBuilder.configuration。
+  // 此时开始所有的属性就可以在随后的整个配置文件中使用了。
   private void propertiesElement(XNode context) throws Exception {
     if (context != null) {
       Properties defaults = context.getChildrenAsProperties();

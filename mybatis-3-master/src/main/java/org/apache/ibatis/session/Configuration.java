@@ -102,6 +102,7 @@ public class Configuration {
 
   /* 是否启用行内嵌套语句**/
   protected boolean safeRowBoundsEnabled;
+  // 允许在嵌套语句中使用分页（ResultHandler）。如果允许使用则设置为false。
   protected boolean safeResultHandlerEnabled = true;
   /* 是否启用数据组A_column自动映射到Java类中的驼峰命名的属性**/
   protected boolean mapUnderscoreToCamelCase;
@@ -209,6 +210,7 @@ public class Configuration {
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
 
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<>();
+  //没有处理完成的缓存依赖
   protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<>();
   protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<>();
   protected final Collection<MethodResolver> incompleteMethods = new LinkedList<>();

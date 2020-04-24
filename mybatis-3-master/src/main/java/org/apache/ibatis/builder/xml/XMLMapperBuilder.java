@@ -120,6 +120,7 @@ public class XMLMapperBuilder extends BaseBuilder {
       builderAssistant.setCurrentNamespace(namespace);
       // 设置二级缓存
       // 缓存依赖
+      // <cache-ref namespace=”com.someone.application.data.SomeMapper”/>
       cacheRefElement(context.evalNode("cache-ref"));
       // 缓存
       cacheElement(context.evalNode("cache"));
@@ -207,6 +208,11 @@ public class XMLMapperBuilder extends BaseBuilder {
       try {
         cacheRefResolver.resolveCacheRef();
       } catch (IncompleteElementException e) {
+        //缓存参考因为通过namespace指向其他的缓存。所以会出现第一次解析的时候指向的缓存还不存在的情况，
+        // 所以需要在所有的mapper文件加载完成后进行二次处理，不仅仅是缓存参考，
+        // 其他的CRUD也一样。所以在XMLMapperBuilder.configuration中有很多的incompleteXXX，
+        // 这种设计模式类似于JVM GC中的mark and sweep，标记、然后处理。所以当捕获到IncompleteElementException异常时，
+        // 没有终止执行，而是将指向的缓存不存在的cacheRefResolver添加到configuration.incompleteCacheRef中。
         configuration.addIncompleteCacheRef(cacheRefResolver);
       }
     }
@@ -291,7 +297,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     for (XNode resultChild : resultChildren) {
       //   实体bean的构造函数
       if ("constructor".equals(resultChild.getName())) {
-        processConstructorElement(resultChild, typeClass, resultMappings);
+          processConstructorElement(resultChild, typeClass, resultMappings);
       } else if ("discriminator".equals(resultChild.getName())) {
         discriminator = processDiscriminatorElement(resultChild, typeClass, resultMappings);
       } else {
