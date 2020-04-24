@@ -61,6 +61,7 @@ public class PageParams {
      * @return
      */
     public Page getPage(Object parameterObject, RowBounds rowBounds) {
+        //从本地线程副本中中取一份
         Page page = PageHelper.getLocalPage();
         if (page == null) {
             if (rowBounds != RowBounds.DEFAULT) {

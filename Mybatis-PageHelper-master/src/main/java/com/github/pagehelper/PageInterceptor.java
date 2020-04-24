@@ -140,6 +140,7 @@ public class PageInterceptor implements Interceptor {
         if (countMs != null) {
             count = ExecutorUtil.executeManualCount(executor, countMs, parameter, boundSql, resultHandler);
         } else {
+            //先从缓存中取
             countMs = msCountMap.get(countMsId);
             //自动创建
             if (countMs == null) {
